@@ -457,7 +457,8 @@ function createCommonWebpackConfig({
         // Rules for JS
         {
           test: reScript,
-          include: unprocessedModules,
+          // needs to be modified to include platform
+          // include: unprocessedModules,
           use: [
             {
               loader: 'thread-loader',
@@ -609,6 +610,7 @@ function createClientWebpackConfig({
   isDebug = true,
   isHmr,
   withLocalSourceMaps,
+  customEntry,
 } = {}) {
   const config = createCommonWebpackConfig({
     app,
@@ -628,7 +630,11 @@ function createClientWebpackConfig({
 
     target: 'web',
 
-    entry: isSingleEntry(entry) ? { app: entry } : entry,
+    entry: customEntry
+      ? customEntry
+      : isSingleEntry(entry)
+      ? { app: entry }
+      : entry,
 
     optimization: {
       minimize: !isDebug,
