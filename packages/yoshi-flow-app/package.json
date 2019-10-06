@@ -1,13 +1,13 @@
 {
-  "name": "yoshi-flow-monorepo",
+  "name": "yoshi-flow-app",
   "version": "4.16.4",
   "bin": {
-    "yoshi-monorepo": "./build/bin/yoshi-monorepo"
+    "yoshi-app": "./build/bin/yoshi-app"
   },
   "keywords": [
     "yoshi",
     "flow",
-    "monorepo"
+    "app"
   ],
   "author": "Ronen Amiel",
   "license": "ISC",

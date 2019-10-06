@@ -78,7 +78,7 @@ module.exports = async (app, options) => {
 
   // Start up server process
   const serverProcess = new ServerProcess({
-    serverFilePath: options.server,
+    serverFilePath: options['--server'],
     hmrPort,
     app,
   });

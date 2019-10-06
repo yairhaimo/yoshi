@@ -1,10 +1,10 @@
 require('source-map-support/register');
 
 const prog = require('commander');
+const chalk = require('chalk');
 const runCLI = require('../src/cli');
 const { version } = require('../package');
 const infoCommand = require('../src/commands/info');
-const chalk = require('chalk');
 const { inTeamCity } = require('yoshi-helpers/queries');
 
 // IDEs start debugging with '--inspect' or '--inspect-brk' option. We are setting --debug instead

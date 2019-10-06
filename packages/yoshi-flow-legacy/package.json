@@ -1,13 +1,13 @@
 {
-  "name": "yoshi-flow-monorepo",
+  "name": "yoshi-flow-legacy",
   "version": "4.16.4",
   "bin": {
-    "yoshi-monorepo": "./build/bin/yoshi-monorepo"
+    "yoshi-legacy": "./build/bin/yoshi-legacy"
   },
   "keywords": [
     "yoshi",
     "flow",
-    "monorepo"
+    "legacy"
   ],
   "author": "Ronen Amiel",
   "license": "ISC",
