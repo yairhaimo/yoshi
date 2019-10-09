@@ -1,0 +1,12 @@
+{
+  "name": "yoshi-common",
+  "version": "4.16.4",
+  "keywords": [
+    "yoshi",
+    "common"
+  ],
+  "author": "Ronen Amiel",
+  "license": "ISC",
+  "devDependencies": {},
+  "dependencies": {}
+}
