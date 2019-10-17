@@ -5,7 +5,13 @@ export class PublicData extends React.Component {
   render() {
     return (
       <PublicDataContext.Consumer>
-        {publicData => this.props.children(publicData)}
+        {publicData => {
+          if (!publicData.ready && publicData.readyPromise) {
+            throw publicData.readyPromise;
+          }
+
+          return this.props.children(publicData);
+        }}
       </PublicDataContext.Consumer>
     );
   }
