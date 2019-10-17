@@ -1,8 +1,5 @@
-import { withStyles } from '@wix/native-components-infra';
-import Widget from '../components/Widget';
+import WidgetWrapper from '../platform/WidgetWrapper';
 
 export default {
-  component: withStyles(Widget, {
-    cssPath: ['viewerWidget.stylable.bundle.css'],
-  }),
+  component: WidgetWrapper,
 };

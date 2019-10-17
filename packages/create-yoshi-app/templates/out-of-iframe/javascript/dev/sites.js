@@ -1,5 +1,5 @@
 module.exports = {
-  viewerUrl: 'https://www.ooidev.com',
+  viewerUrl: 'https://ranywix.wixsite.com/mysite-8',
   editorUrl:
-    'https://editor.wix.com/html/editor/web/renderer/edit/63a24d98-727f-43b8-b038-6d2fd924ee81?metaSiteId=7e08c3da-af8c-4686-a963-c70a2707d0aa',
+    'https://editor.wix.com/html/editor/web/renderer/edit/d3cf6110-7832-481c-8858-b18553b3f682?metaSiteId=33366db1-ef8c-4bde-8b60-0c2e9067d97f',
 };
