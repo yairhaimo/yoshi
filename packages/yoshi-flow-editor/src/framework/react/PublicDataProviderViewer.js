@@ -13,7 +13,6 @@ export default class PublicDataProviderViewer extends React.Component {
   }
 
   handleGetParam = key => {
-    console.log('handle get param');
     return this.props.data[scope][key];
   };
 

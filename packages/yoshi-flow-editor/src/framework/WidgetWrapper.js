@@ -40,7 +40,7 @@ const WidgetWrapper = UserComponent =>
                 <ControllerProvider data={this.props}>
                   <UserComponent
                     {...createInstances(this.props.experiments)}
-                    // {...this.props}
+                    {...this.props}
                   />
                 </ControllerProvider>
               </Suspense>
