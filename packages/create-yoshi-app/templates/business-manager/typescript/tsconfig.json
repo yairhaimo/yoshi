@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "esModuleInterop": true,
+    "sourceMap": true,
+    "target": "es5",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "allowJs": true,
+    "jsx": "react",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "resolveJsonModule": true,
+    "noEmit": true
+  },
+  "include": [
+    "./__tests__/**/*.ts",
+    "./src/**/*.spec.tsx"
+  ],
+  "files": [
+    "./jest-yoshi.config.js",
+    "./node_modules/yoshi/types.d.ts",
+    "./node_modules/jest-yoshi-preset/types.d.ts",
+    "./src/external-types.d.ts",
+    "./src/module.ts",
+    "./dev/server.ts"
+  ]
+}

@@ -1,0 +1,74 @@
+{
+  "name": "@wix/{%projectName%}",
+  "version": "1.0.0",
+  "license": "UNLICENSED",
+  "private": true,
+  "author": {
+    "name": "{%authorName%}",
+    "email": "{%authorEmail%}"
+  },
+  "scripts": {
+    "start": "PORT=5000 yoshi start --server ./dist/server.js --url http://localhost:5000/business-manager/3fdba72b-c9e7-4529-9219-807ad4b36d91/{%projectName%}",
+    "pretest": "yoshi build",
+    "test": "yoshi test",
+    "posttest": "yoshi lint",
+    "release": "yoshi release"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "devDependencies": {
+    "@testing-library/react": "^9.3.0",
+    "@wix/business-manager": "latest",
+    "@wix/business-manager-api": "latest",
+    "chai": "~4.1.0",
+    "husky": "^1.3.1",
+    "jest-yoshi-preset": "^4.1.0",
+    "lint-staged": "^8.1.5",
+    "prop-types": "~15.5.0",
+    "puppeteer": "^1.10.0",
+    "react": "16.8.3",
+    "react-dom": "16.8.3",
+    "react-module-container": "~1.0.0",
+    "yoshi": "^4.1.0",
+    "yoshi-style-dependencies": "^4.1.0"
+  },
+  "dependencies": {
+    "axios": "^0.19.0",
+    "i18next": "~8.4.0",
+    "i18next-xhr-backend": "~1.4.0",
+    "react-i18next": "~4.8.0",
+    "regenerator-runtime": "^0.11.0",
+    "@wix/fedops-logger": "^3.0.5",
+    "@wix/wix-axios-config": "latest"
+  },
+  "lint-staged": {
+    "*.{js,scss,less}": "yoshi lint"
+  },
+  "jest": {
+    "preset": "jest-yoshi-preset"
+  },
+  "yoshi": {
+    "projectType": "app",
+    "entry": {
+      "module": "./module"
+    },
+    "externals": {
+      "react": "React",
+      "react-dom": "ReactDOM",
+      "react-addons-css-transition-group": "React.addons.CSSTransitionGroup",
+      "lodash": "_",
+      "urijs": "URI",
+      "@wix/business-manager-api": "BusinessManagerAPI",
+      "react-module-container": "reactModuleContainer"
+    }
+  },
+  "eslintConfig": {
+    "extends": "yoshi",
+    "globals": {
+      "testKitEnv": true
+    }
+  }
+}

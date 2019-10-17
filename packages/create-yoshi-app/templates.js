@@ -10,6 +10,10 @@ module.exports = [
     name: 'business-manager-module',
     path: toTemplatePath('business-manager-module'),
   },
+  {
+    name: 'business-manager',
+    path: toTemplatePath('business-manager'),
+  },
   { name: 'server', path: toTemplatePath('server') },
   { name: 'library', path: toTemplatePath('library') },
   {
