@@ -6,8 +6,10 @@ export class PublicData extends React.Component {
     return (
       <PublicDataContext.Consumer>
         {publicData => {
-          if (!publicData.ready && publicData.readyPromise) {
-            throw publicData.readyPromise;
+          // If we are in editor mode (readyPromise)
+          // but the data is not ready yet
+          if (publicData.readyPromise && !publicData.ready) {
+            return <h1>loading</h1>;
           }
 
           return this.props.children(publicData);

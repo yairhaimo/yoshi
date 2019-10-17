@@ -4,7 +4,7 @@ const globby = require('globby');
 
 const widgetWrapperPath = path.resolve(
   __dirname,
-  '../framework/WidgetWrapper.js',
+  './framework/WidgetWrapper.js',
 );
 
 const generatedWidgetEntriesPath = path.resolve(__dirname, '../tmp/components');

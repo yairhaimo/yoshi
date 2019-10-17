@@ -5,17 +5,21 @@ import { PublicDataContext } from './PublicDataContext';
 const scope = 'COMPONENT';
 
 export default class PublicDataProviderViewer extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      value: { get: this.handleGetParam },
+    };
+  }
+
   handleGetParam = key => {
+    console.log('handle get param');
     return this.props.data[scope][key];
   };
 
   render() {
     return (
-      <PublicDataContext.Provider
-        value={{
-          get: this.handleGetParam,
-        }}
-      >
+      <PublicDataContext.Provider value={this.state.value}>
         {this.props.children}
       </PublicDataContext.Provider>
     );

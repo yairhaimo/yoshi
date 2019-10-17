@@ -346,7 +346,13 @@ function createCommonWebpackConfig({
       mainFields: ['svelte', 'browser', 'module', 'main'],
 
       // Whether to resolve symlinks to their symlinked location.
-      symlinks: rootApp.experimentalMonorepo,
+      //
+      // TODO - we want the context to be the same context between our framework
+      // and the user code (at least when working on dev mode)
+      // the first is from the user's node_modules and the other from yoshi's code
+      // (PublicDataContext / ControllerContext)
+      symlinks: true,
+      // symlinks: rootApp.experimentalMonorepo,
     },
 
     // Since Yoshi does not depend on every loader it uses directly, we first look
