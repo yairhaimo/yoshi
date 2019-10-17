@@ -457,10 +457,7 @@ function createCommonWebpackConfig({
         // Rules for JS
         {
           test: reScript,
-          // TODO: This is a temporary hack so framework code will be transformed as well,
-          // It needs to be modified to include framework code as well
-          //
-          // include: unprocessedModules,
+          include: unprocessedModules,
           use: [
             {
               loader: 'thread-loader',
