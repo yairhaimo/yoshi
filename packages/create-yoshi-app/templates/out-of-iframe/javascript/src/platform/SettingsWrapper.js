@@ -1,7 +1,7 @@
 import React, { Suspense } from 'react';
-import PublicDataProviderEditor from './PublicDataProviderEditor';
-import ErrorBoundary from './ErrorBoundary';
-import Settings from '../example/widgets/todo/Settings';
+import PublicDataProviderEditor from 'yoshi-flow-editor/src/framework/react/PublicDataProviderEditor';
+import ErrorBoundary from 'yoshi-flow-editor/src/framework/react/ErrorBoundary';
+import Settings from '../example/components/todo/Settings';
 
 export default class ComponentWrapper extends React.Component {
   render() {

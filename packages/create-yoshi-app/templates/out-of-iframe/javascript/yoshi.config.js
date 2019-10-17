@@ -20,10 +20,10 @@ module.exports = {
     },
   },
   entry: {
-    settingsPanel: './settingsPanel/settingsPanel.js',
-    editorApp: './editorApp/editorApp.js',
-    viewerWidget: './viewerApp/viewerWidget.js',
-    'wix-private-mock': '../dev/wix-private.mock.js',
+    // settingsPanel: './settingsPanel/settingsPanel.js',
+    // editorApp: './editorApp/editorApp.js',
+    // viewerWidget: './viewerApp/viewerWidget.js',
+    // 'wix-private-mock': '../dev/wix-private.mock.js',
   },
   webWorker: {
     entry: {

@@ -1,6 +1,6 @@
 import React from 'react';
-import { PublicData } from '../../../platform/PublicDataRenderProp';
-import { Controller } from '../../../platform/ControllerRenderProp';
+import { PublicData } from 'yoshi-flow-editor/src/framework/react/PublicDataRenderProp';
+import { Controller } from 'yoshi-flow-editor/src/framework/react/ControllerRenderProp';
 import styles from './styles.scss';
 
 const Todo = ({ onClick, completed, text }) => {

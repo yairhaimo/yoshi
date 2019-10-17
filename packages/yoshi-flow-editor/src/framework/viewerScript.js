@@ -1,5 +1,5 @@
 // import fetchFrameworkData from './fetchFrameworkData';
-// import { createController } from '../example/widgets/todo/controller';
+// import { createController } from '../example/components/todo/controller';
 // import initApp from '../example/initApp';
 // import createInstances from './createInstances';
 // import { objectPromiseAll } from './utils';

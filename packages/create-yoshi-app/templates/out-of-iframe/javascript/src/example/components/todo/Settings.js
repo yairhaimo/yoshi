@@ -1,5 +1,5 @@
 import React from 'react';
-import { usePublicData } from '../../../platform/hooks';
+import { usePublicData } from 'yoshi-flow-editor/src/framework/react/hooks';
 
 export default () => {
   const { get, set } = usePublicData();

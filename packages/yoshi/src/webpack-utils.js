@@ -4,7 +4,7 @@ const fs = require('fs-extra');
 const chalk = require('chalk');
 const webpack = require('webpack');
 const globby = require('globby');
-const clearConsole = require('react-dev-utils/clearConsole');
+// const clearConsole = require('react-dev-utils/clearConsole');
 const { prepareUrls } = require('react-dev-utils/WebpackDevServerUtils');
 const formatWebpackMessages = require('react-dev-utils/formatWebpackMessages');
 const rootApp = require('yoshi-config/root-app');
@@ -35,7 +35,11 @@ function createCompiler(app, config, { https }) {
 
   compiler.hooks.invalid.tap('recompile-log', () => {
     if (isInteractive) {
-      clearConsole();
+      // TODO - remove, this is useful for debugging at this stage
+      // it makes sure the console does not being cleared after webpack's compilation
+      // and thus helps with debugging the output in case we want to log something
+      //
+      // clearConsole();
     }
 
     console.log('Compiling...');
@@ -43,7 +47,11 @@ function createCompiler(app, config, { https }) {
 
   compiler.hooks.done.tap('finished-log', stats => {
     if (isInteractive) {
-      clearConsole();
+      // TODO - remove, this is useful for debugging at this stage
+      // it makes sure the console does not being cleared after webpack's compilation
+      // and thus helps with debugging the output in case we want to log something
+      //
+      // clearConsole();
     }
 
     const messages = formatWebpackMessages(stats.toJson({}, true));
