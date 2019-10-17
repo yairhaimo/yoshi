@@ -1,8 +1,10 @@
-import fetchFrameworkData from 'yoshi-flow-editor/src/framework/fetchFrameworkData';
 import { createController } from '../example/components/todo/controller';
 import initApp from '../example/initApp';
-import createInstances from 'yoshi-flow-editor/src/framework/createInstances';
-import { objectPromiseAll } from 'yoshi-flow-editor/src/framework/utils';
+import {
+  createInstances,
+  objectPromiseAll,
+  fetchFrameworkData,
+} from 'yoshi-flow-editor-runtime/utils';
 
 let frameworkData;
 

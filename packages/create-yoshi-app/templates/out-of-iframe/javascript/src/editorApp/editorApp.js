@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { ViewerScriptWrapper } from '@wix/native-components-infra';
 import { createControllers, initAppForPage } from '../viewerApp/viewerScript';
-import WidgetWrapper from 'yoshi-flow-editor/src/framework/WidgetWrapper';
+import WidgetWrapper from 'yoshi-flow-editor-runtime/build/WidgetWrapper';
 import Component from '../example/components/todo/Component';
 
 const EditorApp = ViewerScriptWrapper(WidgetWrapper(Component), {
