@@ -457,7 +457,9 @@ function createCommonWebpackConfig({
         // Rules for JS
         {
           test: reScript,
-          // needs to be modified to include platform
+          // TODO: This is a temporary hack so framework code will be transformed as well,
+          // It needs to be modified to include framework code as well
+          //
           // include: unprocessedModules,
           use: [
             {
