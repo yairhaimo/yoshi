@@ -1,11 +1,35 @@
 import React from 'react';
-import { PublicDataContext } from './PublicDataContext';
+import { InferProps, shape, func, string } from 'prop-types';
+import { PublicDataContext, PublicDataType } from './PublicDataContext';
 
 // Later it can be passed into a hook as `usePublicData(scope)`
 const scope = 'COMPONENT';
 
-export default class PublicDataProviderEditor extends React.Component {
-  state = {
+interface IState {
+  ready: boolean;
+  data: Record<string, any> | null;
+  readyPromise: Promise<boolean> | null;
+}
+
+export class PublicDataProviderEditor extends React.Component<
+  InferProps<typeof PublicDataProviderEditor.propTypes>
+> {
+  static propTypes = {
+    Wix: shape({
+      addEventListener: func.isRequired,
+      Events: shape({
+        PUBLIC_DATA_CHANGED: string.isRequired,
+      }).isRequired,
+      Data: shape({
+        Public: shape({
+          set: func.isRequired,
+          getAll: func.isRequired,
+        }).isRequired,
+      }).isRequired,
+    }).isRequired,
+  };
+
+  state: IState = {
     ready: false,
     data: null,
     readyPromise: Promise.reject(),
@@ -14,8 +38,8 @@ export default class PublicDataProviderEditor extends React.Component {
   componentDidMount() {
     const { Wix } = this.props;
 
-    const publicDataPromise = new Promise((resolve, reject) =>
-      Wix.Data.Public.getAll(resolve, reject),
+    const publicDataPromise: Promise<Record<string, any>> = new Promise(
+      (resolve, reject) => Wix.Data.Public.getAll(resolve, reject),
     );
 
     publicDataPromise.then(
@@ -32,29 +56,32 @@ export default class PublicDataProviderEditor extends React.Component {
 
     // Specifically for editor, can be in a different provider that's
     // only used in `WidgetWrapper`
-    Wix.addEventListener(Wix.Events.PUBLIC_DATA_CHANGED, newPublicData => {
-      this.setState({
-        data: newPublicData || {},
-      });
-    });
+    Wix.addEventListener(
+      Wix.Events.PUBLIC_DATA_CHANGED,
+      (newPublicData: Record<string, any>) => {
+        this.setState({
+          data: newPublicData || {},
+        });
+      },
+    );
 
     this.setState({
       readyPromise: publicDataPromise,
     });
   }
 
-  handleGetParam = key => {
-    if (!this.state.ready) {
+  handleGetParam = (key: string) => {
+    if (!this.state.ready || !this.state.data) {
       throw new Error('Public data provider is not ready');
     }
 
     return this.state.data[key];
   };
 
-  handleSetParam = (key, value) => {
+  handleSetParam = (key: string, value: any) => {
     const { Wix } = this.props;
 
-    if (!this.state.ready) {
+    if (!this.state.ready || !this.state.data) {
       throw new Error('Public data provider is not ready');
     }
 
@@ -62,7 +89,7 @@ export default class PublicDataProviderEditor extends React.Component {
       return;
     }
 
-    this.setState(state => ({
+    this.setState((state: IState) => ({
       data: {
         ...state.data,
         [key]: value,
@@ -74,7 +101,7 @@ export default class PublicDataProviderEditor extends React.Component {
       value,
       { scope },
       () => {},
-      error => {
+      (error: string | undefined) => {
         throw new Error(error);
       },
     );
@@ -88,6 +115,7 @@ export default class PublicDataProviderEditor extends React.Component {
           readyPromise: this.state.readyPromise,
           get: this.handleGetParam,
           set: this.handleSetParam,
+          type: PublicDataType.EditorPublicData,
         }}
       >
         {this.props.children}

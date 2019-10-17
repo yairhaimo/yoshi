@@ -36,6 +36,7 @@ module.exports = repoDirectory => {
   [
     'yoshi',
     'yoshi-flow-editor',
+    'yoshi-flow-editor-runtime',
     'jest-yoshi-preset',
     'yoshi-server',
     'yoshi-server-client',

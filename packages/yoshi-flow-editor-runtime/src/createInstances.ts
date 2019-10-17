@@ -1,10 +1,12 @@
 import Experiments from '@wix/wix-experiments';
 
 // accpets platform data and return instances of each class
-function createInstances({ experiments }) {
+export function createInstances({
+  experiments,
+}: {
+  experiments: Record<string, any>;
+}) {
   return {
     experiments: new Experiments({ experiments }),
   };
 }
-
-export default createInstances;

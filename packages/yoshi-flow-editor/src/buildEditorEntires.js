@@ -2,9 +2,8 @@ const path = require('path');
 const fs = require('fs-extra');
 const globby = require('globby');
 
-const widgetWrapperPath = path.resolve(
-  __dirname,
-  './framework/WidgetWrapper.js',
+const widgetWrapperPath = require.resolve(
+  'yoshi-flow-editor-runtime/build/WidgetWrapper.js',
 );
 
 const generatedWidgetEntriesPath = path.resolve(__dirname, '../tmp/components');
