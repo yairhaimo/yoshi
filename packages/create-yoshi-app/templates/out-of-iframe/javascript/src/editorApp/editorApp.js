@@ -1,25 +1,13 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { ViewerScriptWrapper, withStyles } from '@wix/native-components-infra';
-import viewerScript from '../viewerApp/viewerScript';
-import Widget from '../components/Widget';
+import { ViewerScriptWrapper } from '@wix/native-components-infra';
+import { createControllers, initAppForPage } from '../viewerApp/viewerScript';
+import WidgetWrapper from '../platform/WidgetWrapper';
 
-const EditorApp = ViewerScriptWrapper(
-  withStyles(Widget, {
-    cssPath: ['editorApp.stylable.bundle.css'],
-  }),
-  {
-    viewerScript,
-    Wix: window.Wix,
-    widgetConfig: {},
-    overrides: {
-      platform: {
-        baseUrls: {
-          staticsBaseUrl: window.__STATICS_BASE_URL__,
-        },
-      },
-    },
-  },
-);
+const EditorApp = ViewerScriptWrapper(WidgetWrapper, {
+  viewerScript: { createControllers, initAppForPage },
+  Wix: window.Wix,
+  widgetConfig: {},
+});
 
 ReactDOM.render(<EditorApp />, document.getElementById('root'));
