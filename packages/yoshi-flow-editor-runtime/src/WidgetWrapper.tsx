@@ -28,7 +28,7 @@ const PublicDataProvider: typeof React.Component =
     : PublicDataProviderEditor;
 
 const ComponentWrapper = (UserComponent: typeof React.Component) => (
-  props: Spread<IHostProps, IFrameworkProps>,
+  props: IHostProps & IFrameworkProps,
 ) => {
   console.log(props.style);
   const css = getProcessedCss(props.style);
