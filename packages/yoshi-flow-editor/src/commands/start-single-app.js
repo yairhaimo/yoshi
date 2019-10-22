@@ -40,12 +40,11 @@ module.exports = async (app, options) => {
   // Generate an available port for server HMR
   const hmrPort = await detect();
 
-  const { componentEntries } = buildEditorEntries();
+  const editorEntries = buildEditorEntries();
 
   const customEntry = {
-    settingsPanel: './settingsPanel/settingsPanel.js',
     editorApp: './editorApp/editorApp.js',
-    ...componentEntries,
+    ...editorEntries,
     'wix-private-mock': '../dev/wix-private.mock.js',
   };
 
