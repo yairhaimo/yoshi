@@ -13,6 +13,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "bfj": "^7.0.1",
     "chalk": "^2.4.2",
     "chokidar": "^3.2.2",
     "commander": "^3.0.0",
@@ -22,7 +23,7 @@
     "minimist": "^1.2.0",
     "yoshi": "4.17.1",
     "yoshi-config": "4.17.0",
-    "yoshi-helpers": "4.17.0",
-    "yoshi-flow-editor-runtime": "4.17.0"
+    "yoshi-flow-editor-runtime": "4.17.0",
+    "yoshi-helpers": "4.17.0"
   }
 }

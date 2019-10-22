@@ -5,14 +5,15 @@ const prog = require('commander');
 // const chalk = require('chalk');
 // const { inTeamCity } = require('yoshi-helpers/queries');
 const start = require('../src/commands/start');
+const build = require('../src/commands/build-app');
 
-// prog
-//   .command('build')
-//   .description('Building an app to production')
-//   // .option('--analyze', 'Run webpack-bundle-analyzer plugin')
-//   // .option('--stats', 'Generate dist/webpack-stats.json file')
-//   // .option('--source-map', 'Explicitly emit bundle source maps')
-//   .action(() => build());
+prog
+  .command('build')
+  //   .description('Building an app to production')
+  //   // .option('--analyze', 'Run webpack-bundle-analyzer plugin')
+  //   // .option('--stats', 'Generate dist/webpack-stats.json file')
+  //   // .option('--source-map', 'Explicitly emit bundle source maps')
+  .action(() => build());
 
 prog
   .command('start')
