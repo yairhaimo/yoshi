@@ -1,48 +1,29 @@
 const path = require('path');
-const fs = require('fs-extra');
 const globby = require('globby');
-
-const widgetWrapperPath = require.resolve(
-  'yoshi-flow-editor-runtime/build/WidgetWrapper.js',
-);
+const componentWrapping = require('./componentWrapping');
+const settingsWrapping = require('./settingsWrapping');
 
 const generatedWidgetEntriesPath = path.resolve(__dirname, '../tmp/components');
 
-// const buildEditorComponents = () => {};
-
 const buildEditorPlatformEntries = () => {
-  const userComponents = globby.sync(
-    './src/example/components/*/Component.js',
-    {
-      absolute: true,
-    },
+  const userComponents = globby.sync('./src/example/**/Component.js', {
+    absolute: true,
+  });
+
+  const userSettings = globby.sync('./src/example/**/Settings.js', {
+    absolute: true,
+  });
+
+  const componentEntries = componentWrapping(
+    generatedWidgetEntriesPath,
+    userComponents,
+  );
+  const settingsEntries = settingsWrapping(
+    generatedWidgetEntriesPath,
+    userSettings,
   );
 
-  const componentEntries = userComponents.reduce((acc, widgetAbsolutePath) => {
-    const widgetName = path.basename(path.dirname(widgetAbsolutePath));
-    const generatedWidgetEntryPath = path.join(
-      generatedWidgetEntriesPath,
-      `${widgetName}.js`,
-    );
-
-    const generateWidgetEntryContent = `
-    import WidgetWrapper from '${widgetWrapperPath}';
-    import Widget from '${widgetAbsolutePath}';
-
-    export default { component: WidgetWrapper(Widget)};`;
-
-    fs.outputFileSync(generatedWidgetEntryPath, generateWidgetEntryContent);
-
-    if (widgetName === 'todo') {
-      acc['viewerWidget'] = generatedWidgetEntryPath;
-    }
-
-    acc[widgetName] = generatedWidgetEntryPath;
-
-    return acc;
-  }, {});
-
-  return { componentEntries };
+  return { ...componentEntries, ...settingsEntries };
 };
 
 module.exports = buildEditorPlatformEntries;
