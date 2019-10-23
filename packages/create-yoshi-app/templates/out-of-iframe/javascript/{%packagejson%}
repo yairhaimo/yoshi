@@ -29,6 +29,7 @@
     "react-test-renderer": "~15.6.0",
     "velocity": "~0.7.0",
     "yoshi": "^4.6.3",
+    "yoshi-flow-editor": "*",
     "yoshi-style-dependencies": "^4.6.0"
   },
   "dependencies": {
