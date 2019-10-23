@@ -43,7 +43,6 @@ module.exports = async (app, options) => {
   const editorEntries = buildEditorEntries();
 
   const customEntry = {
-    editorApp: './editorApp/editorApp.js',
     ...editorEntries,
     'wix-private-mock': '../dev/wix-private.mock.js',
   };
