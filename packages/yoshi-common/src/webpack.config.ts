@@ -20,6 +20,7 @@ import { resolveNamespaceFactory } from '@stylable/node';
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 import { StylableWebpackPlugin } from '@stylable/webpack-plugin';
 import importCwd from 'import-cwd';
+import { localIdentName } from './utils/constants';
 
 type WebpackEntrypoints = {
   [bundle: string]: string | Array<string>;
@@ -30,7 +31,6 @@ const inTeamCity = checkInTeamCity();
 
 const babelConfig = createBabelConfig({ modules: false });
 
-const artifactVersion = process.env.ARTIFACT_VERSION;
 const disableModuleConcat = process.env.DISABLE_MODULE_CONCATENATION === 'true';
 
 const reScript = /\.js?$/;
@@ -38,6 +38,165 @@ const reStyle = /\.(css|less|scss|sass)$/;
 const reAssets = /\.(png|jpg|jpeg|gif|woff|woff2|ttf|otf|eot|wav|mp3)$/;
 
 const staticAssetName = 'media/[name].[hash:8].[ext]';
+
+const sassIncludePaths = ['node_modules', 'node_modules/compass-mixins/lib'];
+
+export const getStyleLoaders = ({
+  name,
+  embedCss = false,
+  isDev = false,
+  isHot = false,
+  cssModules = true,
+  experimentalRtlCss = false,
+  separateCss = false,
+  tpaStyle = false,
+}: {
+  name: string;
+  embedCss?: boolean;
+  isDev?: boolean;
+  isHot?: boolean;
+  cssModules?: boolean;
+  experimentalRtlCss?: boolean;
+  separateCss?: boolean;
+  tpaStyle?: boolean;
+}): Array<webpack.Rule> => {
+  const cssLoaderOptions = {
+    camelCase: true,
+    sourceMap: separateCss,
+    localIdentName: isProduction ? localIdentName.short : localIdentName.long,
+    // Make sure every package has unique class names
+    hashPrefix: name,
+    // https://github.com/css-modules/css-modules
+    modules: cssModules,
+    // PostCSS, less-loader, sass-loader and resolve-url-loader, so
+    // composition will work with import
+    importLoaders: 4 + Number(tpaStyle),
+  };
+
+  return [
+    {
+      test: reStyle,
+      exclude: /\.st\.css$/,
+      rules: [
+        ...(embedCss
+          ? [
+              // https://github.com/shepherdwind/css-hot-loader
+              ...(isHot
+                ? [{ loader: 'yoshi-style-dependencies/css-hot-loader' }]
+                : []),
+
+              // Process every style asset with either `style-loader`
+              // or `mini-css-extract-plugin`
+              ...(separateCss
+                ? [
+                    {
+                      loader: MiniCssExtractPlugin.loader,
+                      options: {
+                        // By default it use publicPath in webpackOptions.output
+                        // We are overriding it to restore relative paths in url() calls
+                        publicPath: '',
+                      },
+                    },
+                  ]
+                : [
+                    {
+                      loader: 'yoshi-style-dependencies/style-loader',
+                      options: {
+                        // Reuses a single `<style></style>` element
+                        singleton: true,
+                      },
+                    },
+                  ]),
+
+              {
+                oneOf: [
+                  // Files ending with `.global.(css|sass|scss|less)` will be transpiled with
+                  // `modules: false`
+                  {
+                    test: /\.global\.[A-z]*$/,
+                    loader: 'yoshi-style-dependencies/css-loader',
+                    options: {
+                      ...cssLoaderOptions,
+                      modules: false,
+                    },
+                    sideEffects: true,
+                  },
+                  {
+                    // https://github.com/webpack/css-loader
+                    loader: 'yoshi-style-dependencies/css-loader',
+                    options: cssLoaderOptions,
+                  },
+                ],
+              },
+              {
+                loader: 'yoshi-style-dependencies/postcss-loader',
+                options: {
+                  // https://github.com/facebookincubator/create-react-app/issues/2677
+                  ident: 'postcss',
+                  plugins: [
+                    experimentalRtlCss && require('postcss-rtl')(),
+                    require('autoprefixer')({
+                      // https://github.com/browserslist/browserslist
+                      overrideBrowserslist: [
+                        '> 0.5%',
+                        'last 2 versions',
+                        'Firefox ESR',
+                        'not dead',
+                        'ie >= 11',
+                      ].join(','),
+                      flexbox: 'no-2009',
+                    }),
+                  ].filter(Boolean),
+                  sourceMap: isDev,
+                },
+              },
+
+              // https://github.com/bholloway/resolve-url-loader
+              {
+                loader: 'yoshi-style-dependencies/resolve-url-loader',
+              },
+            ]
+          : [
+              {
+                loader: 'yoshi-style-dependencies/css-loader',
+                options: {
+                  ...cssLoaderOptions,
+                  importLoaders: 2 + Number(tpaStyle),
+                  exportOnlyLocals: true,
+                  sourceMap: false,
+                },
+              },
+            ]),
+
+        // https://github.com/wix/wix-tpa-style-loader
+        ...(tpaStyle ? [{ loader: 'wix-tpa-style-loader' }] : []),
+
+        // https://github.com/webpack-contrib/less-loader
+        {
+          test: /\.less$/,
+          loader: 'less-loader',
+          options: {
+            sourceMap: embedCss,
+            paths: ['.', 'node_modules'],
+          },
+        },
+
+        // https://github.com/webpack-contrib/sass-loader
+        {
+          test: /\.(scss|sass)$/,
+          loader: 'yoshi-style-dependencies/sass-loader',
+          options: {
+            sourceMap: embedCss,
+            implementation: importCwd.silent(
+              'yoshi-style-dependencies/node-sass',
+            ),
+            includePaths: sassIncludePaths,
+          },
+        },
+      ],
+    },
+  ];
+};
 
 export default async function getBaseWebpackConfig({
   name,
@@ -47,10 +206,12 @@ export default async function getBaseWebpackConfig({
   isTypeScript = false,
   isTypecheck = false,
   isAngular = false,
-  isSeparateCss = false,
+  separateCss = false,
   keepFunctionNames = false,
   forceFullSourceMaps = false,
   stylableSeparateCss = false,
+  experimentalRtlCss = false,
+  cssModules = true,
   cwd = process.cwd(),
   publicPath,
   entrypoints,
@@ -64,10 +225,12 @@ export default async function getBaseWebpackConfig({
   isTypeScript?: boolean;
   isTypecheck?: boolean;
   isAngular?: boolean;
-  isSeparateCss: boolean;
+  separateCss: boolean;
   keepFunctionNames?: boolean;
   forceFullSourceMaps?: boolean;
   stylableSeparateCss?: boolean;
+  experimentalRtlCss?: boolean;
+  cssModules?: boolean;
   cwd?: string;
   publicPath: string;
   entrypoints: WebpackEntrypoints;
@@ -76,7 +239,15 @@ export default async function getBaseWebpackConfig({
 }): Promise<webpack.Configuration> {
   const join = (...dirs: Array<string>) => path.join(cwd, ...dirs);
 
-  const sassIncludePaths = ['node_modules', 'node_modules/compass-mixins/lib'];
+  const styleLoaders = getStyleLoaders({
+    name,
+    embedCss: target !== 'node',
+    cssModules,
+    isDev,
+    isHot,
+    experimentalRtlCss,
+    separateCss,
+  });
 
   const config: webpack.Configuration = {
     context: join(SRC_DIR),
@@ -95,6 +266,18 @@ export default async function getBaseWebpackConfig({
       chunkFilename: isDev ? '[name].chunk.js' : '[name].chunk.min.js',
       hotUpdateMainFilename: 'updates/[hash].hot-update.json',
       hotUpdateChunkFilename: 'updates/[id].[hash].hot-update.js',
+
+      ...(target === 'node'
+        ? {
+            filename: '[name].js',
+            chunkFilename: 'chunks/[name].js',
+            libraryTarget: 'umd',
+            globalObject: "(typeof self !== 'undefined' ? self : this)",
+            // Point sourcemap entries to original disk location (format as URL on Windows)
+            devtoolModuleFilenameTemplate: info =>
+              path.resolve(info.absoluteResourcePath).replace(/\\/g, '/'),
+          }
+        : {}),
 
       // https://github.com/wix/yoshi/pull/497
       jsonpFunction: `webpackJsonp_${toIdentifier(name)}`,
@@ -145,6 +328,7 @@ export default async function getBaseWebpackConfig({
     plugins: [
       new ModuleNotFoundPlugin(cwd),
       new CaseSensitivePathsPlugin(),
+
       ...(isTypeScript && isTypecheck && isDev
         ? [
             new (await import('fork-ts-checker-webpack-plugin')).default({
@@ -156,6 +340,7 @@ export default async function getBaseWebpackConfig({
             }),
           ]
         : []),
+
       ...(isHot ? [new webpack.HotModuleReplacementPlugin()] : []),
 
       ...(target === 'web'
@@ -170,7 +355,7 @@ export default async function getBaseWebpackConfig({
               minimize: !isDev,
             }),
 
-            ...(isSeparateCss
+            ...(separateCss
               ? [
                   new MiniCssExtractPlugin({
                     filename: isDev ? '[name].css' : '[name].min.css',
@@ -220,7 +405,7 @@ export default async function getBaseWebpackConfig({
       strictExportPresence: true,
 
       rules: [
-        ...(target === 'web' ? [] : []),
+        ...styleLoaders,
 
         {
           test: /\.svelte$/,
