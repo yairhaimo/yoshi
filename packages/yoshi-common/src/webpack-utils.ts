@@ -6,7 +6,6 @@ import globby from 'globby';
 import clearConsole from 'react-dev-utils/clearConsole';
 import { prepareUrls } from 'react-dev-utils/WebpackDevServerUtils';
 import formatWebpackMessages from 'react-dev-utils/formatWebpackMessages';
-// import rootApp from 'yoshi-config/root-app';
 import Watchpack from 'watchpack';
 import { shouldDeployToCDN, inTeamCity } from 'yoshi-helpers/queries';
 import { getProjectCDNBasePath } from 'yoshi-helpers/utils';
