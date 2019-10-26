@@ -16,6 +16,8 @@ import {
 import TerserPlugin from 'terser-webpack-plugin';
 import OptimizeCSSAssetsPlugin from 'optimize-css-assets-webpack-plugin';
 import WriteFilePlugin from 'write-file-webpack-plugin';
+import { resolveNamespaceFactory } from '@stylable/node';
+import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 
 type WebpackEntrypoints = {
   [bundle: string]: string | Array<string>;
@@ -151,6 +153,10 @@ export default async function getBaseWebpackConfig({
               ),
               'process.env.ARTIFACT_ID': JSON.stringify(getProjectArtifactId()),
             }),
+          ]
+        : []),
+      ...(target === 'web'
+        ? [
             new WriteFilePlugin({
               exitOnErrors: false,
               log: false,
@@ -158,6 +164,45 @@ export default async function getBaseWebpackConfig({
             }),
             new webpack.LoaderOptionsPlugin({
               minimize: !isDev,
+            }),
+            ...(isSeparateCss
+              ? [
+                  new MiniCssExtractPlugin({
+                    filename: isDev ? '[name].css' : '[name].min.css',
+                    chunkFilename: isDev
+                      ? '[name].chunk.css'
+                      : '[name].chunk.min.css',
+                  }),
+                  ...(app.enhancedTpaStyle
+                    ? [new TpaStyleWebpackPlugin()]
+                    : []),
+                  ...(!rootApp.experimentalBuildHtml &&
+                  !rootApp.experimentalRtlCss
+                    ? [
+                        new RtlCssPlugin(
+                          isDev ? '[name].rtl.css' : '[name].rtl.min.css',
+                        ),
+                      ]
+                    : []),
+                ]
+              : []),
+
+            new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/),
+
+            new StylableWebpackPlugin({
+              outputCSS: stylableSeparateCss,
+              filename: '[name].stylable.bundle.css',
+              includeCSSInJS: !stylableSeparateCss,
+              optimize: {
+                classNameOptimizations: false,
+                shortNamespaces: false,
+              },
+              runtimeMode: 'shared',
+              globalRuntimeId: '__stylable_yoshi__',
+              generate: {
+                runtimeStylesheetId: 'namespace',
+              },
+              resolveNamespace: resolveNamespaceFactory(name),
             }),
           ]
         : []),
