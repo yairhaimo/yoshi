@@ -4,7 +4,7 @@ import { cliCommand } from '../bin/yoshi-app';
 
 const startSingleApp = require('yoshi/src/commands/utils/start-single-app');
 
-const start: cliCommand = async function(argv) {
+const start: cliCommand = async function(argv, config) {
   const args = arg(
     {
       // Types

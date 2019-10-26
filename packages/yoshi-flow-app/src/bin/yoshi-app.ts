@@ -1,8 +1,10 @@
 import arg from 'arg';
+import loadConfig from 'yoshi-config/loadConfig';
+import { Config } from 'yoshi-config/build/config';
 
 const defaultCommand = 'build';
 
-export type cliCommand = (argv?: Array<string>) => Promise<void>;
+export type cliCommand = (argv: Array<string>, config: Config) => Promise<void>;
 
 const commands: {
   [command: string]: () => Promise<{ default: cliCommand }>;
@@ -59,4 +61,6 @@ if (args['--help']) {
 const defaultEnv = command === 'dev' ? 'development' : 'production';
 process.env.NODE_ENV = process.env.NODE_ENV || defaultEnv;
 
-commands[command]().then(exec => exec.default(forwardedArgs));
+const config = loadConfig();
+
+commands[command]().then(exec => exec.default(forwardedArgs, config));

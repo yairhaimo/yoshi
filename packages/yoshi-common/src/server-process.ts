@@ -1,11 +1,13 @@
+import path from 'path';
 import stream from 'stream';
 import child_process from 'child_process';
 import chalk from 'chalk';
 import waitPort from 'wait-port';
 import fs from 'fs-extra';
 import { getDevelopmentEnvVars } from 'yoshi-helpers/bootstrap-utils';
+import { SERVER_LOG_FILE } from 'yoshi-config/paths';
 import SocketServer from './socket-server';
-import { PORT } from './constants';
+import { PORT } from './utils/constants';
 
 function serverLogPrefixer() {
   return new stream.Transform({
@@ -23,6 +25,7 @@ function notUndefined<T>(x: T | undefined): x is T {
 const inspectArg = process.argv.find(arg => arg.includes('--debug'));
 
 export default class ServerProcess {
+  private cwd: string;
   private serverFilePath: string;
   private hmrPort: number;
   private socketServer: SocketServer;
@@ -30,12 +33,15 @@ export default class ServerProcess {
   private resolve?: (value?: unknown) => void;
 
   constructor({
+    cwd = process.cwd(),
     serverFilePath,
     hmrPort,
   }: {
+    cwd: string;
     serverFilePath: string;
     hmrPort: number;
   }) {
+    this.cwd = cwd;
     this.hmrPort = hmrPort;
     this.socketServer = new SocketServer({ hmrPort });
     this.serverFilePath = serverFilePath;
@@ -45,7 +51,6 @@ export default class ServerProcess {
     await this.socketServer.initialize();
 
     const bootstrapEnvironmentParams = getDevelopmentEnvVars({
-      app: this.app,
       port: PORT,
     });
 
@@ -57,13 +62,15 @@ export default class ServerProcess {
       env: {
         ...process.env,
         NODE_ENV: 'development',
-        PORT,
+        PORT: `${PORT}`,
         HMR_PORT: `${this.hmrPort}`,
         ...bootstrapEnvironmentParams,
       },
     });
 
-    const serverLogWriteStream = fs.createWriteStream(this.app.SERVER_LOG_FILE);
+    const serverLogWriteStream = fs.createWriteStream(
+      path.join(this.cwd, SERVER_LOG_FILE),
+    );
     const serverOutLogStream = this.child.stdout!.pipe(serverLogPrefixer());
     serverOutLogStream.pipe(serverLogWriteStream);
     serverOutLogStream.pipe(process.stdout);

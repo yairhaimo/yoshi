@@ -1,14 +1,14 @@
 import arg from 'arg';
-import rootApp from 'yoshi-config/root-app';
 import { cliCommand } from '../bin/yoshi-app';
+// import {} from 'yoshi-common';
 
-const buildApps = require('yoshi/src/commands/utils/build-apps');
-const {
-  printBundleSizeSuggestion,
-  printBuildResult,
-} = require('yoshi/src/commands/utils/print-build-results');
+// const buildApps = require('yoshi/src/commands/utils/build-apps');
+// const {
+//   printBundleSizeSuggestion,
+//   printBuildResult,
+// } = require('yoshi/src/commands/utils/print-build-results');
 
-const build: cliCommand = async function(argv) {
+const build: cliCommand = async function(argv, config) {
   const args = arg(
     {
       // Types

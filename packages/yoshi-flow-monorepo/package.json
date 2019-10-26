@@ -1,6 +1,6 @@
 {
   "name": "yoshi-flow-monorepo",
-  "version": "4.16.4",
+  "version": "4.17.2",
   "bin": {
     "yoshi-monorepo": "./build/bin/yoshi-monorepo"
   },
@@ -14,7 +14,7 @@
   "devDependencies": {},
   "dependencies": {
     "arg": "4.1.1",
-    "yoshi": "4.16.4",
-    "yoshi-config": "4.16.4"
+    "yoshi": "4.17.2",
+    "yoshi-config": "4.17.2"
   }
 }

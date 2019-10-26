@@ -3,6 +3,7 @@ import fs from 'fs';
 import globby from 'globby';
 import config from 'yoshi-config';
 import * as globs from 'yoshi-config/globs';
+import { POM_FILE } from 'yoshi-config/paths';
 import { defaultEntry } from './constants';
 
 export const exists = (
@@ -70,11 +71,11 @@ export const hasBundleInStaticsDir = (cwd = process.cwd()) => {
   );
 };
 
-export const shouldDeployToCDN = (app: any) => {
+export const shouldDeployToCDN = (cwd: string = process.cwd()) => {
   return (
     inTeamCity() &&
     (process.env.ARTIFACT_VERSION || process.env.BUILD_VCS_NUMBER) &&
-    fs.existsSync(app.POM_FILE)
+    fs.existsSync(path.join(cwd, POM_FILE))
   );
 };
 

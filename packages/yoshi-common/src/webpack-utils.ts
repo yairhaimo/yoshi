@@ -1,5 +1,4 @@
 import path from 'path';
-import cors from 'cors';
 import fs from 'fs-extra';
 import chalk from 'chalk';
 import webpack from 'webpack';
@@ -7,24 +6,26 @@ import globby from 'globby';
 import clearConsole from 'react-dev-utils/clearConsole';
 import { prepareUrls } from 'react-dev-utils/WebpackDevServerUtils';
 import formatWebpackMessages from 'react-dev-utils/formatWebpackMessages';
-import rootApp from 'yoshi-config/root-app';
-import WebpackDevServer from 'webpack-dev-server';
+// import rootApp from 'yoshi-config/root-app';
 import Watchpack from 'watchpack';
 import { shouldDeployToCDN, inTeamCity } from 'yoshi-helpers/queries';
 import { getProjectCDNBasePath } from 'yoshi-helpers/utils';
-import { redirectMiddleware } from '../src/tasks/cdn/server-api';
-import { PORT } from './constants';
+import { SRC_DIR, ROUTES_DIR } from 'yoshi-config/paths';
+import { PORT } from './utils/constants';
 
 const isDevelopment = process.env.NODE_ENV === 'development';
 
 const isInteractive = process.stdout.isTTY;
 const possibleServerEntries = ['./server', '../dev/server'];
 
-function createCompiler(app, config, { https }) {
+function createCompiler(
+  webpackConfig: webpack.Configuration,
+  { https, port }: { https: boolean; port: number },
+) {
   let compiler: webpack.Compiler;
 
   try {
-    compiler = webpack(config);
+    compiler = webpack(webpackConfig);
   } catch (err) {
     console.log(chalk.red('Failed to compile.'));
     console.log();
@@ -57,7 +58,7 @@ function createCompiler(app, config, { https }) {
         const devServerUrls = prepareUrls(
           https ? 'https' : 'http',
           '0.0.0.0',
-          app.servers.cdn.port,
+          port,
         );
 
         console.log();
@@ -128,12 +129,16 @@ function createCompiler(app, config, { https }) {
   return compiler;
 }
 
-function addEntry(entry, hotEntries) {
-  let newEntry = {};
+function addEntry(
+  entry: string | Array<string> | webpack.Entry | webpack.EntryFunc,
+  hotEntries: Array<string>,
+): string | Array<string> | webpack.Entry | webpack.EntryFunc {
+  let newEntry: string | Array<string> | webpack.Entry | webpack.EntryFunc = {};
 
   if (typeof entry === 'function') {
     const originalEntry = entry;
 
+    // @ts-ignore
     newEntry = async () => {
       return addEntry(await originalEntry(), hotEntries);
     };
@@ -150,7 +155,10 @@ function addEntry(entry, hotEntries) {
   return newEntry;
 }
 
-function overrideRules(rules, patch) {
+function overrideRules(
+  rules: Array<webpack.Rule>,
+  patch: (rule: webpack.Rule) => webpack.Rule,
+): Array<webpack.Rule> {
   return rules.map(ruleToPatch => {
     let rule = patch(ruleToPatch);
     if (rule.rules) {
@@ -160,52 +168,11 @@ function overrideRules(rules, patch) {
       rule = { ...rule, oneOf: overrideRules(rule.oneOf, patch) };
     }
     if (rule.use) {
+      // @ts-ignore
       rule = { ...rule, use: overrideRules(rule.use, patch) };
     }
     return rule;
   });
-}
-
-function createDevServer(
-  clientCompiler,
-  { publicPath, https, host, app = rootApp },
-) {
-  const devServer = new WebpackDevServer(clientCompiler, {
-    // Enable gzip compression for everything served
-    compress: true,
-    clientLogLevel: 'error',
-    contentBase: app.STATICS_DIR,
-    watchContentBase: true,
-    hot: true,
-    publicPath,
-    // We write our own errors/warnings to the console
-    quiet: true,
-    https,
-    // The server should be accessible externally
-    host,
-    overlay: true,
-    // https://github.com/wix/yoshi/pull/1191
-    allowedHosts: [
-      '.wix.com',
-      '.wixsite.com',
-      '.ooidev.com',
-      '.deviantart.lan',
-    ],
-    before(expressApp) {
-      // Send cross origin headers
-      expressApp.use(cors());
-      // Redirect `.min.(js|css)` to `.(js|css)`
-      expressApp.use(redirectMiddleware(host, app.servers.cdn.port));
-    },
-  });
-
-  // Update sockets with new stats, we use the sockWrite() method
-  // to update the hot client with server data
-  devServer.send = (...args) => {
-    return devServer.sockWrite(devServer.sockets, ...args);
-  };
-
-  return devServer;
 }
 
 function waitForCompilation(compiler: webpack.Compiler) {
@@ -216,25 +183,31 @@ function waitForCompilation(compiler: webpack.Compiler) {
   });
 }
 
-function createServerEntries(context, app) {
-  const serverFunctions = fs.pathExistsSync(app.SRC_DIR)
-    ? globby.sync('**/*.api.(js|ts)', { cwd: app.SRC_DIR, absolute: true })
+function createServerEntries(context: string, cwd: string = process.cwd()) {
+  const serverFunctions = fs.pathExistsSync(path.join(cwd, SRC_DIR))
+    ? globby.sync('**/*.api.(js|ts)', {
+        cwd: path.join(cwd, SRC_DIR),
+        absolute: true,
+      })
     : [];
 
-  const serverRoutes = fs.pathExistsSync(app.ROUTES_DIR)
-    ? globby.sync('**/*.(js|ts)', { cwd: app.ROUTES_DIR, absolute: true })
+  const serverRoutes = fs.pathExistsSync(path.join(cwd, ROUTES_DIR))
+    ? globby.sync('**/*.(js|ts)', {
+        cwd: path.join(cwd, ROUTES_DIR),
+        absolute: true,
+      })
     : [];
 
   // Normalize to an object with short entry names
-  const entries = [...serverFunctions, ...serverRoutes].reduce(
-    (acc, filepath) => {
-      return {
-        ...acc,
-        [path.relative(context, filepath).replace(/\.[^/.]+$/, '')]: filepath,
-      };
-    },
-    {},
-  );
+  const entries: Record<string, string> = [
+    ...serverFunctions,
+    ...serverRoutes,
+  ].reduce((acc, filepath) => {
+    return {
+      ...acc,
+      [path.relative(context, filepath).replace(/\.[^/.]+$/, '')]: filepath,
+    };
+  }, {});
 
   // Add custom entries for `yoshi-server`
   entries['routes/_api_'] = 'yoshi-server/build/routes/api';
@@ -242,50 +215,66 @@ function createServerEntries(context, app) {
   return entries;
 }
 
-function watchDynamicEntries(watching, app) {
+function watchDynamicEntries(
+  watching: webpack.Watching,
+  cwd: string = process.cwd(),
+) {
   const wp = new Watchpack({});
 
   wp.on('aggregated', () => {
     watching.invalidate();
   });
 
-  wp.watch([], [app.SRC_DIR, app.ROUTES_DIR]);
+  wp.watch([], [path.join(cwd, SRC_DIR), path.join(cwd, ROUTES_DIR)]);
 }
 
-const exists = (app, extensions) => entry => {
-  return (
-    globby.sync(`${entry}(${extensions.join('|')})`, {
-      cwd: app.SRC_DIR,
-    }).length > 0
-  );
-};
+function validateServerEntry({
+  cwd = process.cwd(),
+  extensions,
+  yoshiServer = false,
+}: {
+  cwd: string;
+  extensions: Array<string>;
+  yoshiServer: boolean;
+}) {
+  const serverEntry = possibleServerEntries.find(entry => {
+    return (
+      globby.sync(`${entry}(${extensions.join('|')})`, {
+        cwd: path.join(cwd, SRC_DIR),
+      }).length > 0
+    );
+  });
 
-function validateServerEntry(app, extensions) {
-  const serverEntry = possibleServerEntries.find(exists(app, extensions));
-
-  if (!serverEntry && !app.yoshiServer) {
+  if (!serverEntry && !yoshiServer) {
     throw new Error(
       `We couldn't find your server entry. Please use one of the defaults:
           - "src/server": for a fullstack project
           - "dev/server": for a client only project`,
     );
   }
+
   return serverEntry;
 }
 
-function calculatePublicPath(app) {
+function calculatePublicPath({
+  cwd = process.cwd(),
+  url,
+}: {
+  cwd: string;
+  url: string;
+}) {
   // default public path
   let publicPath = '/';
 
   if (!inTeamCity() || isDevelopment) {
     // When on local machine or on dev environment,
     // set the local dev-server url as the public path
-    publicPath = app.servers.cdn.url;
+    publicPath = url;
   }
 
   // In case we are running in CI and there is a pom.xml file, change the public path according to the path on the cdn
   // The path is created using artifactName from pom.xml and artifact version from an environment param.
-  if (shouldDeployToCDN(rootApp)) {
+  if (shouldDeployToCDN(cwd)) {
     publicPath = getProjectCDNBasePath();
   }
 
@@ -293,7 +282,6 @@ function calculatePublicPath(app) {
 }
 
 export {
-  createDevServer,
   createCompiler,
   waitForCompilation,
   addEntry,
