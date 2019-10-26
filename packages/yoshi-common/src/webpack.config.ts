@@ -11,13 +11,14 @@ import {
   unprocessedModules,
   createBabelConfig,
   toIdentifier,
-  getProjectArtifactId,
 } from 'yoshi-helpers/utils';
 import TerserPlugin from 'terser-webpack-plugin';
 import OptimizeCSSAssetsPlugin from 'optimize-css-assets-webpack-plugin';
 import WriteFilePlugin from 'write-file-webpack-plugin';
 import { resolveNamespaceFactory } from '@stylable/node';
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
+import { StylableWebpackPlugin } from '@stylable/webpack-plugin';
+import importCwd from 'import-cwd';
 
 type WebpackEntrypoints = {
   [bundle: string]: string | Array<string>;
@@ -48,6 +49,7 @@ export default async function getBaseWebpackConfig({
   isSeparateCss = false,
   keepFunctionNames = false,
   forceFullSourceMaps = false,
+  stylableSeparateCss = false,
   cwd = process.cwd(),
   publicPath,
   entrypoints,
@@ -63,12 +65,15 @@ export default async function getBaseWebpackConfig({
   isSeparateCss: boolean;
   keepFunctionNames?: boolean;
   forceFullSourceMaps?: boolean;
+  stylableSeparateCss?: boolean;
   cwd?: string;
   publicPath: string;
   entrypoints: WebpackEntrypoints;
   resolveAlias: { [key: string]: string };
 }): Promise<webpack.Configuration> {
   const join = (...dirs: Array<string>) => path.join(cwd, ...dirs);
+
+  const sassIncludePaths = ['node_modules', 'node_modules/compass-mixins/lib'];
 
   const config: webpack.Configuration = {
     context: join(SRC_DIR),
@@ -141,20 +146,7 @@ export default async function getBaseWebpackConfig({
           ]
         : []),
       ...(isHot ? [new webpack.HotModuleReplacementPlugin()] : []),
-      ...(target !== 'node'
-        ? [
-            new webpack.DefinePlugin({
-              'process.env.NODE_ENV': JSON.stringify(
-                isProduction ? 'production' : 'development',
-              ),
-              'process.env.IS_MINIFIED': JSON.stringify(!isDev),
-              'window.__CI_APP_VERSION__': JSON.stringify(
-                artifactVersion ? artifactVersion : '0.0.0',
-              ),
-              'process.env.ARTIFACT_ID': JSON.stringify(getProjectArtifactId()),
-            }),
-          ]
-        : []),
+
       ...(target === 'web'
         ? [
             new WriteFilePlugin({
@@ -162,9 +154,11 @@ export default async function getBaseWebpackConfig({
               log: false,
               useHashIndex: false,
             }),
+
             new webpack.LoaderOptionsPlugin({
               minimize: !isDev,
             }),
+
             ...(isSeparateCss
               ? [
                   new MiniCssExtractPlugin({
@@ -173,17 +167,6 @@ export default async function getBaseWebpackConfig({
                       ? '[name].chunk.css'
                       : '[name].chunk.min.css',
                   }),
-                  ...(app.enhancedTpaStyle
-                    ? [new TpaStyleWebpackPlugin()]
-                    : []),
-                  ...(!rootApp.experimentalBuildHtml &&
-                  !rootApp.experimentalRtlCss
-                    ? [
-                        new RtlCssPlugin(
-                          isDev ? '[name].rtl.css' : '[name].rtl.min.css',
-                        ),
-                      ]
-                    : []),
                 ]
               : []),
 
@@ -213,6 +196,35 @@ export default async function getBaseWebpackConfig({
       strictExportPresence: true,
 
       rules: [
+        ...(target === 'web'
+          ? [
+              {
+                test: /\.svelte$/,
+                // Both, `svelte-loader` and `svelte-preprocess-sass` should be installed
+                // by the project that needs it.
+                //
+                // If more users use `svelte` we'll consider adding it to everyone by default.
+                loader: 'svelte-loader',
+                options: {
+                  hydratable: true,
+                  // https://github.com/sveltejs/svelte-loader/issues/67
+                  onwarn: (warning: any, onwarn: any) => {
+                    warning.code === 'css-unused-selector' || onwarn(warning);
+                  },
+                  preprocess: {
+                    style:
+                      importCwd.silent('svelte-preprocess-sass') &&
+                      (importCwd.silent('svelte-preprocess-sass') as any).sass({
+                        includePaths: sassIncludePaths,
+                      }),
+                  },
+                  dev: isDev,
+                  emitCss: true,
+                },
+              },
+            ]
+          : []),
+
         ...(isAngular
           ? [
               {
