@@ -208,15 +208,11 @@ export default async function getBaseWebpackConfig({
   isAngular = false,
   separateCss = false,
   keepFunctionNames = false,
-  forceFullSourceMaps = false,
   stylableSeparateCss = false,
   experimentalRtlCss = false,
   cssModules = true,
   cwd = process.cwd(),
   publicPath,
-  entrypoints,
-  externals,
-  resolveAlias,
 }: {
   name: string;
   target: 'web' | 'node' | 'webworker';
@@ -227,15 +223,11 @@ export default async function getBaseWebpackConfig({
   isAngular?: boolean;
   separateCss: boolean;
   keepFunctionNames?: boolean;
-  forceFullSourceMaps?: boolean;
   stylableSeparateCss?: boolean;
   experimentalRtlCss?: boolean;
   cssModules?: boolean;
   cwd?: string;
   publicPath: string;
-  entrypoints: WebpackEntrypoints;
-  externals: webpack.ExternalsElement | Array<webpack.ExternalsElement>;
-  resolveAlias: { [key: string]: string };
 }): Promise<webpack.Configuration> {
   const join = (...dirs: Array<string>) => path.join(cwd, ...dirs);
 
@@ -253,8 +245,6 @@ export default async function getBaseWebpackConfig({
     context: join(SRC_DIR),
 
     target,
-
-    entry: entrypoints,
 
     mode: isProduction ? 'production' : 'development',
 
@@ -286,7 +276,6 @@ export default async function getBaseWebpackConfig({
     resolve: {
       modules: ['node_modules', join(SRC_DIR)],
       extensions: ['.mjs', '.js', '.jsx', '.ts', '.tsx', '.svelte', '.json'],
-      alias: resolveAlias,
       mainFields: ['svelte', 'browser', 'module', 'main'],
     },
 
@@ -606,11 +595,9 @@ export default async function getBaseWebpackConfig({
             __dirname: false,
           },
 
-    externals,
-
     devtool:
       target !== 'node'
-        ? inTeamCity || forceFullSourceMaps
+        ? inTeamCity
           ? 'source-map'
           : !isProduction
           ? 'cheap-module-eval-source-map'
