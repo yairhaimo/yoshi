@@ -1,9 +1,41 @@
+import http from 'http';
+import https from 'https';
 import path from 'path';
 import cors from 'cors';
 import WebpackDevServer from 'webpack-dev-server';
 import webpack from 'webpack';
 import { STATICS_DIR } from 'yoshi-config/paths';
-import { redirectMiddleware } from '../src/tasks/cdn/server-api';
+import express from 'express';
+
+export function redirectMiddleware(
+  hostname: string,
+  port: number,
+): express.Handler {
+  return (req, res, next) => {
+    if (!/\.min\.(js|css)/.test(req.originalUrl)) {
+      return next();
+    }
+
+    const httpModule = req.protocol === 'http' ? http : https;
+
+    const options = {
+      port,
+      hostname,
+      path: req.originalUrl.replace('.min', ''),
+      rejectUnauthorized: false,
+    };
+
+    const request = httpModule.request(options, proxiedResponse => {
+      for (const header in proxiedResponse.headers) {
+        // @ts-ignore
+        res.setHeader(header, proxiedResponse.headers[header]);
+      }
+      proxiedResponse.pipe(res);
+    });
+
+    request.on('error', () => next()).end();
+  };
+}
 
 export default class extends WebpackDevServer {
   constructor(
