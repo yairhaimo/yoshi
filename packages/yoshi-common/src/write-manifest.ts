@@ -1,11 +1,11 @@
-const url = require('url');
-const path = require('path');
-const fs = require('fs-extra');
-const { groupBy } = require('lodash');
-const { getProjectArtifactVersion } = require('yoshi-helpers/utils');
-const rootApp = require('yoshi-config/root-app');
+import url from 'url';
+import path from 'path';
+import fs from 'fs-extra';
+import { groupBy } from 'lodash';
+import { getProjectArtifactVersion } from 'yoshi-helpers/utils';
+import rootApp from 'yoshi-config/root-app';
 
-module.exports = async function writeManifest(config, stats, app = rootApp) {
+export default async function writeManifest(config, stats, app = rootApp) {
   const assetsJson = stats.compilation.chunkGroups.reduce((acc, chunk) => {
     acc[chunk.name] = [
       // If a chunk shows more than once, append to existing files
@@ -47,4 +47,4 @@ module.exports = async function writeManifest(config, stats, app = rootApp) {
     assetsJson,
     { spaces: 2 },
   );
-};
+}

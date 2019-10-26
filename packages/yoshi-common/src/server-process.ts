@@ -1,12 +1,11 @@
-const chalk = require('chalk');
-const stream = require('stream');
-const waitPort = require('wait-port');
-const child_process = require('child_process');
-const fs = require('fs-extra');
-const rootApp = require('yoshi-config/root-app');
-const SocketServer = require('./socket-server');
-const { PORT } = require('./constants');
-const { getDevelopmentEnvVars } = require('yoshi-helpers/bootstrap-utils');
+import stream from 'stream';
+import child_process from 'child_process';
+import chalk from 'chalk';
+import waitPort from 'wait-port';
+import fs from 'fs-extra';
+import { getDevelopmentEnvVars } from 'yoshi-helpers/bootstrap-utils';
+import SocketServer from './socket-server';
+import { PORT } from './constants';
 
 function serverLogPrefixer() {
   return new stream.Transform({
@@ -17,11 +16,26 @@ function serverLogPrefixer() {
   });
 }
 
+function notUndefined<T>(x: T | undefined): x is T {
+  return x !== undefined;
+}
+
 const inspectArg = process.argv.find(arg => arg.includes('--debug'));
 
-module.exports = class ServerProcess {
-  constructor({ app = rootApp, serverFilePath, hmrPort }) {
-    this.app = app;
+export default class ServerProcess {
+  private serverFilePath: string;
+  private hmrPort: number;
+  private socketServer: SocketServer;
+  private child?: child_process.ChildProcess;
+  private resolve?: (value?: unknown) => void;
+
+  constructor({
+    serverFilePath,
+    hmrPort,
+  }: {
+    serverFilePath: string;
+    hmrPort: number;
+  }) {
     this.hmrPort = hmrPort;
     this.socketServer = new SocketServer({ hmrPort });
     this.serverFilePath = serverFilePath;
@@ -35,26 +49,26 @@ module.exports = class ServerProcess {
       port: PORT,
     });
 
-    this.child = child_process.fork(this.serverFilePath, {
+    this.child = child_process.fork(this.serverFilePath, [], {
       stdio: 'pipe',
       execArgv: [inspectArg]
-        .filter(Boolean)
+        .filter(notUndefined)
         .map(arg => arg.replace('debug', 'inspect')),
       env: {
         ...process.env,
         NODE_ENV: 'development',
         PORT,
-        HMR_PORT: this.hmrPort,
+        HMR_PORT: `${this.hmrPort}`,
         ...bootstrapEnvironmentParams,
       },
     });
 
     const serverLogWriteStream = fs.createWriteStream(this.app.SERVER_LOG_FILE);
-    const serverOutLogStream = this.child.stdout.pipe(serverLogPrefixer());
+    const serverOutLogStream = this.child.stdout!.pipe(serverLogPrefixer());
     serverOutLogStream.pipe(serverLogWriteStream);
     serverOutLogStream.pipe(process.stdout);
 
-    const serverErrorLogStream = this.child.stderr.pipe(serverLogPrefixer());
+    const serverErrorLogStream = this.child.stderr!.pipe(serverLogPrefixer());
     serverErrorLogStream.pipe(serverLogWriteStream);
     serverErrorLogStream.pipe(process.stderr);
 
@@ -67,30 +81,30 @@ module.exports = class ServerProcess {
     });
   }
 
-  onMessage(response) {
-    this._resolve(response);
+  onMessage(response: any) {
+    this.resolve && this.resolve(response);
   }
 
   end() {
-    this.child.kill();
+    this.child && this.child.kill();
   }
 
-  send(message) {
+  send(message: any) {
     this.socketServer.send(message);
 
-    return new Promise((resolve, reject) => {
-      this._resolve = resolve;
-      this._reject = reject;
+    return new Promise(resolve => {
+      this.resolve = resolve;
     });
   }
 
   async restart() {
-    if (this.child.exitCode === null) {
+    // @ts-ignore
+    if (this.child && this.child.exitCode === null) {
       this.child.kill();
 
       await new Promise(resolve =>
         setInterval(() => {
-          if (this.child.killed) {
+          if (this.child && this.child.killed) {
             resolve();
           }
         }, 100),
@@ -99,4 +113,4 @@ module.exports = class ServerProcess {
 
     await this.initialize();
   }
-};
+}

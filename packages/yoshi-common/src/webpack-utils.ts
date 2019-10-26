@@ -1,19 +1,19 @@
-const path = require('path');
-const cors = require('cors');
-const fs = require('fs-extra');
-const chalk = require('chalk');
-const webpack = require('webpack');
-const globby = require('globby');
-const clearConsole = require('react-dev-utils/clearConsole');
-const { prepareUrls } = require('react-dev-utils/WebpackDevServerUtils');
-const formatWebpackMessages = require('react-dev-utils/formatWebpackMessages');
-const rootApp = require('yoshi-config/root-app');
-const { PORT } = require('./constants');
-const { redirectMiddleware } = require('../src/tasks/cdn/server-api');
-const WebpackDevServer = require('webpack-dev-server');
-const Watchpack = require('watchpack');
-const { shouldDeployToCDN, inTeamCity } = require('yoshi-helpers/queries');
-const { getProjectCDNBasePath } = require('yoshi-helpers/utils');
+import path from 'path';
+import cors from 'cors';
+import fs from 'fs-extra';
+import chalk from 'chalk';
+import webpack from 'webpack';
+import globby from 'globby';
+import clearConsole from 'react-dev-utils/clearConsole';
+import { prepareUrls } from 'react-dev-utils/WebpackDevServerUtils';
+import formatWebpackMessages from 'react-dev-utils/formatWebpackMessages';
+import rootApp from 'yoshi-config/root-app';
+import WebpackDevServer from 'webpack-dev-server';
+import Watchpack from 'watchpack';
+import { shouldDeployToCDN, inTeamCity } from 'yoshi-helpers/queries';
+import { getProjectCDNBasePath } from 'yoshi-helpers/utils';
+import { redirectMiddleware } from '../src/tasks/cdn/server-api';
+import { PORT } from './constants';
 
 const isDevelopment = process.env.NODE_ENV === 'development';
 
@@ -21,7 +21,7 @@ const isInteractive = process.stdout.isTTY;
 const possibleServerEntries = ['./server', '../dev/server'];
 
 function createCompiler(app, config, { https }) {
-  let compiler;
+  let compiler: webpack.Compiler;
 
   try {
     compiler = webpack(config);
@@ -30,7 +30,8 @@ function createCompiler(app, config, { https }) {
     console.log();
     console.log(err.message || err);
     console.log();
-    process.exit(1);
+
+    return process.exit(1);
   }
 
   compiler.hooks.invalid.tap('recompile-log', () => {
@@ -207,7 +208,7 @@ function createDevServer(
   return devServer;
 }
 
-function waitForCompilation(compiler) {
+function waitForCompilation(compiler: webpack.Compiler) {
   return new Promise((resolve, reject) => {
     compiler.hooks.done.tap('promise', stats =>
       stats.hasErrors() ? reject(stats) : resolve(stats),
@@ -242,7 +243,7 @@ function createServerEntries(context, app) {
 }
 
 function watchDynamicEntries(watching, app) {
-  const wp = new Watchpack();
+  const wp = new Watchpack({});
 
   wp.on('aggregated', () => {
     watching.invalidate();
@@ -291,7 +292,7 @@ function calculatePublicPath(app) {
   return publicPath;
 }
 
-module.exports = {
+export {
   createDevServer,
   createCompiler,
   waitForCompilation,

@@ -1,0 +1,70 @@
+Arguments: 
+  /Users/ronena/.nvm/versions/node/v10.13.0/bin/node /usr/local/Cellar/yarn/1.13.0/libexec/bin/yarn.js install --mutex network:42424 --non-interactive
+
+PATH: 
+  /Users/ronena/Projects/yoshi/packages/yoshi-server/node_modules/.bin:/Users/ronena/Projects/yoshi/packages/node_modules/.bin:/Users/ronena/Projects/yoshi/node_modules/.bin:/Users/ronena/Projects/node_modules/.bin:/Users/ronena/node_modules/.bin:/Users/node_modules/.bin:/node_modules/.bin:/Users/ronena/.nvm/versions/node/v10.13.0/bin:/Users/ronena/.nvm/versions/node/v10.13.0/lib/node_modules/npm/node_modules/npm-lifecycle/node-gyp-bin:/Users/ronena/Projects/yoshi/node_modules/.bin:/var/folders/37/9gk7z1357k740z7_6ftkk_hmcx5y8z/T/yarn--1572078398941-0.3696420883803999:/Users/ronena/Projects/yoshi/node_modules/.bin:/Users/ronena/.config/yarn/link/node_modules/.bin:/Users/ronena/Projects/yoshi/node_modules/.bin:/Users/ronena/.config/yarn/link/node_modules/.bin:/Users/ronena/.nvm/versions/node/v10.13.0/libexec/lib/node_modules/npm/bin/node-gyp-bin:/Users/ronena/.nvm/versions/node/v10.13.0/lib/node_modules/npm/bin/node-gyp-bin:/Users/ronena/.nvm/versions/node/v10.13.0/bin/node_modules/npm/bin/node-gyp-bin:/Users/ronena/.nvm/versions/node/v10.13.0/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin
+
+Yarn version: 
+  1.13.0
+
+Node version: 
+  10.13.0
+
+Platform: 
+  darwin x64
+
+Trace: 
+  Error: https://registry.yarnpkg.com/@wix%2fwix-bootstrap-greynode: Not found
+      at Request.params.callback [as _callback] (/usr/local/Cellar/yarn/1.13.0/libexec/lib/cli.js:66255:18)
+      at Request.self.callback (/usr/local/Cellar/yarn/1.13.0/libexec/lib/cli.js:129397:22)
+      at Request.emit (events.js:182:13)
+      at Request.<anonymous> (/usr/local/Cellar/yarn/1.13.0/libexec/lib/cli.js:130369:10)
+      at Request.emit (events.js:182:13)
+      at IncomingMessage.<anonymous> (/usr/local/Cellar/yarn/1.13.0/libexec/lib/cli.js:130291:12)
+      at Object.onceWrapper (events.js:273:13)
+      at IncomingMessage.emit (events.js:187:15)
+      at endReadableNT (_stream_readable.js:1094:12)
+      at process._tickCallback (internal/process/next_tick.js:63:19)
+
+npm manifest: 
+  {
+  	"name": "yoshi-server",
+  	"version": "4.17.2",
+  	"main": "build/index.js",
+  	"sideEffects": false,
+  	"keywords": [
+  		"yoshi",
+  		"server"
+  	],
+  	"author": "Ronen Amiel",
+  	"license": "ISC",
+  	"dependencies": {
+  		"@types/ejs": "2.6.3",
+  		"@types/express": "4.17.1",
+  		"@types/sockjs-client": "1.1.1",
+  		"@wix/wix-bootstrap-greynode": "latest",
+  		"@wix/wix-bootstrap-hadron": "latest",
+  		"@wix/wix-bootstrap-ng": "latest",
+  		"@wix/wix-bootstrap-require-login": "latest",
+  		"@wix/wix-express-csrf": "latest",
+  		"@wix/wix-express-require-https": "latest",
+  		"ejs": "2.7.1",
+  		"express": "4.17.1",
+  		"fp-ts": "2.1.0",
+  		"globby": "10.0.1",
+  		"import-fresh": "3.1.0",
+  		"io-ts": "2.0.1",
+  		"micro": "9.3.5-canary.3",
+  		"path-to-regexp": "3.1.0",
+  		"serialize-error": "4.1.0",
+  		"sockjs-client": "1.4.0",
+  		"type-fest": "0.8.1",
+  		"youch": "2.0.10"
+  	}
+  }
+
+yarn manifest: 
+  No manifest
+
+Lockfile: 
+  No lockfile

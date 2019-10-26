@@ -1,4 +1,4 @@
-const openBrowser = require('react-dev-utils/openBrowser');
+import openBrowser from 'react-dev-utils/openBrowser';
 
 // our own implementation of open browser which accepts more than one url
 //
@@ -10,8 +10,8 @@ const openBrowser = require('react-dev-utils/openBrowser');
 //
 // url can be a list of strings
 // ['https://localhost:3000', 'https://localhost:3001']
-module.exports = arg => {
-  let urlsList;
+export default (arg: string | Array<string>): void => {
+  let urlsList: Array<string>;
 
   if (Array.isArray(arg)) {
     urlsList = arg;

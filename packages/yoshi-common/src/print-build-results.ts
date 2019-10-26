@@ -1,11 +1,11 @@
-const path = require('path');
-const fs = require('fs-extra');
-const chalk = require('chalk');
-const filesize = require('filesize');
-const { sync: gzipSize } = require('gzip-size');
-const rootApp = require('yoshi-config/root-app');
+import path from 'path';
+import fs from 'fs-extra';
+import chalk from 'chalk';
+import filesize from 'filesize';
+import { sync as gzipSize } from 'gzip-size';
+import rootApp from 'yoshi-config/root-app';
 
-function printBundleSizeSuggestion() {
+export function printBundleSizeSuggestion() {
   console.log(chalk.dim('    Interested in reducing your bundle size?'));
   console.log();
   console.log(
@@ -18,7 +18,7 @@ function printBundleSizeSuggestion() {
   );
 }
 
-function printBuildResult({ app = rootApp, webpackStats }) {
+export function printBuildResult({ app = rootApp, webpackStats }) {
   const [clientStats, serverStats] = webpackStats;
 
   const clientAssets = prepareAssets(clientStats, app.STATICS_DIR, app);
@@ -62,8 +62,3 @@ function printStatsResult(assets, assetNameColor) {
     );
   });
 }
-
-module.exports = {
-  printBuildResult,
-  printBundleSizeSuggestion,
-};

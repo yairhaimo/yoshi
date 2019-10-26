@@ -1,9 +1,14 @@
-const EventEmitter = require('events');
-const http = require('http');
-const sockjs = require('sockjs');
+import EventEmitter from 'events';
+import http from 'http';
+import sockjs from 'sockjs';
 
-module.exports = class SocketServer extends EventEmitter {
-  constructor({ hmrPort }) {
+export default class SocketServer extends EventEmitter {
+  private hmrPort: number;
+  private socket: sockjs.Server;
+  private server: http.Server;
+  private connections: Array<sockjs.Connection>;
+
+  constructor({ hmrPort }: { hmrPort: number }) {
     super();
 
     this.connections = [];
@@ -39,7 +44,7 @@ module.exports = class SocketServer extends EventEmitter {
     });
   }
 
-  send(message) {
+  send(message: any) {
     this.connections.forEach(connection => {
       connection.write(JSON.stringify(message));
     });
@@ -47,11 +52,7 @@ module.exports = class SocketServer extends EventEmitter {
 
   async initialize() {
     if (!this.server.listening) {
-      await new Promise((resolve, reject) => {
-        this.server.listen(this.hmrPort, err =>
-          err ? reject(err) : resolve(),
-        );
-      });
+      await new Promise(resolve => this.server.listen(this.hmrPort, resolve));
     }
   }
-};
+}
