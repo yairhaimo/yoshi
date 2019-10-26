@@ -1,4 +1,5 @@
 import path from 'path';
+import fs from 'fs-extra';
 import webpack from 'webpack';
 import { SRC_DIR, STATICS_DIR, TSCONFIG_FILE } from 'yoshi-config/paths';
 import {
@@ -53,6 +54,7 @@ export default async function getBaseWebpackConfig({
   cwd = process.cwd(),
   publicPath,
   entrypoints,
+  externals,
   resolveAlias,
 }: {
   name: string;
@@ -69,6 +71,7 @@ export default async function getBaseWebpackConfig({
   cwd?: string;
   publicPath: string;
   entrypoints: WebpackEntrypoints;
+  externals: webpack.ExternalsElement | Array<webpack.ExternalsElement>;
   resolveAlias: { [key: string]: string };
 }): Promise<webpack.Configuration> {
   const join = (...dirs: Array<string>) => path.join(cwd, ...dirs);
@@ -110,26 +113,34 @@ export default async function getBaseWebpackConfig({
       modules: [path.join(__dirname, '../node_modules'), 'node_modules'],
     },
 
-    optimization: {
-      minimize: !isDev,
-      concatenateModules: isProduction && !disableModuleConcat,
-      minimizer: [
-        new TerserPlugin({
-          parallel: true,
-          cache: true,
-          sourceMap: true,
-          terserOptions: {
-            output: {
-              ascii_only: true,
-            },
-            keep_fnames: keepFunctionNames,
-          },
-        }),
-        new OptimizeCSSAssetsPlugin(),
-      ],
+    optimization:
+      target !== 'node'
+        ? {
+            minimize: !isDev,
+            concatenateModules: isProduction && !disableModuleConcat,
+            minimizer: [
+              new TerserPlugin({
+                parallel: true,
+                cache: true,
+                sourceMap: true,
+                terserOptions: {
+                  output: {
+                    ascii_only: true,
+                  },
+                  keep_fnames: keepFunctionNames,
+                },
+              }),
+              new OptimizeCSSAssetsPlugin(),
+            ],
 
-      splitChunks: false,
-    },
+            splitChunks: false,
+          }
+        : {
+            // Do not modify/set the value of `process.env.NODE_ENV`
+            nodeEnv: false,
+            // Faster build time and possibly easier debugging
+            minimize: false,
+          },
 
     plugins: [
       new ModuleNotFoundPlugin(cwd),
@@ -189,6 +200,19 @@ export default async function getBaseWebpackConfig({
             }),
           ]
         : []),
+
+      ...(target === 'node'
+        ? [
+            new webpack.BannerPlugin({
+              banner: fs.readFileSync(
+                path.join(__dirname, 'utils/source-map-support.js'),
+                'utf-8',
+              ),
+              raw: true,
+              entryOnly: false,
+            }),
+          ]
+        : []),
     ],
 
     module: {
@@ -196,34 +220,33 @@ export default async function getBaseWebpackConfig({
       strictExportPresence: true,
 
       rules: [
-        ...(target === 'web'
-          ? [
-              {
-                test: /\.svelte$/,
-                // Both, `svelte-loader` and `svelte-preprocess-sass` should be installed
-                // by the project that needs it.
-                //
-                // If more users use `svelte` we'll consider adding it to everyone by default.
-                loader: 'svelte-loader',
-                options: {
-                  hydratable: true,
-                  // https://github.com/sveltejs/svelte-loader/issues/67
-                  onwarn: (warning: any, onwarn: any) => {
-                    warning.code === 'css-unused-selector' || onwarn(warning);
-                  },
-                  preprocess: {
-                    style:
-                      importCwd.silent('svelte-preprocess-sass') &&
-                      (importCwd.silent('svelte-preprocess-sass') as any).sass({
-                        includePaths: sassIncludePaths,
-                      }),
-                  },
-                  dev: isDev,
-                  emitCss: true,
-                },
-              },
-            ]
-          : []),
+        ...(target === 'web' ? [] : []),
+
+        {
+          test: /\.svelte$/,
+          // Both, `svelte-loader` and `svelte-preprocess-sass` should be installed
+          // by the project that needs it.
+          //
+          // If more users use `svelte` we'll consider adding it to everyone by default.
+          loader: 'svelte-loader',
+          options: {
+            hydratable: true,
+            // https://github.com/sveltejs/svelte-loader/issues/67
+            onwarn: (warning: any, onwarn: any) => {
+              warning.code === 'css-unused-selector' || onwarn(warning);
+            },
+            preprocess: {
+              style:
+                importCwd.silent('svelte-preprocess-sass') &&
+                (importCwd.silent('svelte-preprocess-sass') as any).sass({
+                  includePaths: sassIncludePaths,
+                }),
+            },
+            dev: isDev,
+            emitCss: target !== 'node',
+            generate: target === 'node' ? 'ssr' : 'dom',
+          },
+        },
 
         ...(isAngular
           ? [
@@ -381,19 +404,33 @@ export default async function getBaseWebpackConfig({
 
     stats: 'none',
 
-    node: {
-      fs: 'empty',
-      net: 'empty',
-      tls: 'empty',
-      __dirname: true,
-    },
+    node:
+      target !== 'node'
+        ? {
+            fs: 'empty',
+            net: 'empty',
+            tls: 'empty',
+            __dirname: true,
+          }
+        : {
+            console: false,
+            global: false,
+            process: false,
+            Buffer: false,
+            __filename: false,
+            __dirname: false,
+          },
+
+    externals,
 
     devtool:
-      inTeamCity || forceFullSourceMaps
-        ? 'source-map'
-        : !isProduction
-        ? 'cheap-module-eval-source-map'
-        : false,
+      target !== 'node'
+        ? inTeamCity || forceFullSourceMaps
+          ? 'source-map'
+          : !isProduction
+          ? 'cheap-module-eval-source-map'
+          : false
+        : 'inline-source-map',
   };
 
   return config;
