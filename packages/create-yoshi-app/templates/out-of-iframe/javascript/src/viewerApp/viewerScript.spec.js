@@ -16,6 +16,11 @@ describe('createControllers', () => {
         window: {
           locale: 'en',
         },
+        user: {
+          currentUser: {
+            id: 'userId',
+          },
+        },
       },
     };
   });

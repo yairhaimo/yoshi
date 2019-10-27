@@ -39,20 +39,22 @@ export class PublicDataProviderEditor extends React.Component<
     const { Wix } = this.props;
 
     const publicDataPromise: Promise<Record<string, any>> = new Promise(
-      (resolve, reject) => Wix.Data.Public.getAll(resolve, reject),
+      (resolve, reject) => {
+        try {
+          return Wix.Data.Public.getAll(resolve, reject);
+        } catch (e) {
+          console.error(e);
+          reject(e);
+        }
+      },
     );
 
-    publicDataPromise.then(
-      data => {
-        this.setState({
-          data: data[scope] || {},
-          ready: true,
-        });
-      },
-      error => {
-        throw new Error(error);
-      },
-    );
+    publicDataPromise.then(data => {
+      this.setState({
+        data: data[scope] || {},
+        ready: true,
+      });
+    });
 
     // Specifically for editor, can be in a different provider that's
     // only used in `WidgetWrapper`

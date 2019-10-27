@@ -21,7 +21,7 @@ module.exports = repoDirectory => {
   // Link yoshi's `.bin` to the parent directory of the tested module
   fs.ensureSymlinkSync(
     path.join(__dirname, '../../packages/yoshi/bin/yoshi.js'),
-    path.join(parentDirectory, 'node_modules/.bin/yoshi'),
+    path.join(repoDirectory, 'node_modules/.bin/yoshi'),
   );
 
   // Link yoshi-flow-editor's `.bin` to the parent directory of the tested module
@@ -30,7 +30,7 @@ module.exports = repoDirectory => {
       __dirname,
       '../../packages/yoshi-flow-editor/bin/yoshi-flow-editor.js',
     ),
-    path.join(parentDirectory, 'node_modules/.bin/yoshi-flow-editor'),
+    path.join(repoDirectory, 'node_modules/.bin/yoshi-flow-editor'),
   );
 
   [

@@ -34,6 +34,17 @@ app.use('/settingsPanel', (req, res) => {
   res.send(renderVM('./src/templates/settingsPanel.vm'));
 });
 
+const state = {};
+
+app.get('/state', (req, res) => {
+  res.json(state[req.query.userId]);
+});
+
+app.post('/state', (req, res) => {
+  state[req.query.userId] = req.body;
+  res.json({ success: true });
+});
+
 // Launch the server
 server.start().then(
   () => {

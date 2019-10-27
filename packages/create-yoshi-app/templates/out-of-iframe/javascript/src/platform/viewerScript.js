@@ -12,6 +12,8 @@ export const createControllers = controllerConfigs => {
   const [controllerConfig] = controllerConfigs;
   const { appParams, platformAPIs, wixCodeApi, csrfToken } = controllerConfig;
 
+  initializeExperiments();
+
   const appData = initApp({
     controllerConfigs,
     frameworkData,
@@ -79,16 +81,18 @@ export const createControllers = controllerConfigs => {
   return [wrappedControllerPromise];
 };
 
+const initializeExperiments = () => {
+  frameworkData = fetchFrameworkData();
+
+  // TODO: Generalize
+  frameworkData.experimentsPromise = frameworkData.experimentsPromise.then(
+    experiments => createInstances({ experiments }).experiments,
+  );
+};
+
 export const initAppForPage = async () =>
   // initParams,
   // platformApis,
   // scopedSdkApis,
   // platformServicesApis,
-  {
-    frameworkData = fetchFrameworkData();
-
-    // TODO: Generalize
-    frameworkData.experimentsPromise = frameworkData.experimentsPromise.then(
-      experiments => createInstances({ experiments }).experiments,
-    );
-  };
+  {};

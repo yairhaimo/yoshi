@@ -1,7 +1,5 @@
 import axios from 'axios';
 
-axios.defaults.baseURL = 'https://localhost:3000';
-
 export const loadState = async userId => {
   const { data } = await axios.get('/state', { params: { userId } });
   return data;
