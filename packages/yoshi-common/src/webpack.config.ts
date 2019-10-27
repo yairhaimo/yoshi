@@ -221,7 +221,7 @@ export default async function getBaseWebpackConfig({
   isTypeScript?: boolean;
   isTypecheck?: boolean;
   isAngular?: boolean;
-  separateCss: boolean;
+  separateCss?: boolean;
   keepFunctionNames?: boolean;
   stylableSeparateCss?: boolean;
   experimentalRtlCss?: boolean;
