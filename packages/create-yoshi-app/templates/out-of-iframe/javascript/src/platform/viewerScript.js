@@ -95,4 +95,6 @@ export const initAppForPage = async () =>
   // platformApis,
   // scopedSdkApis,
   // platformServicesApis,
-  {};
+  {
+    initializeExperiments();
+  };

@@ -1,4 +1,4 @@
-import { saveState, loadState } from './service';
+// import { saveState, loadState } from './service';
 import v4 from 'uuid/v4';
 
 const defaultState = {
@@ -7,14 +7,16 @@ const defaultState = {
 };
 
 export const createController = async function({
-  controllerConfig,
+  // controllerConfig,
   frameworkData,
   appData: appDataPromise,
 }) {
-  const { id: userId } = controllerConfig.wixCodeApi.user.currentUser;
+  // const { id: userId } = controllerConfig.wixCodeApi.user.currentUser;
 
   // Load app data
-  const initialState = await loadState(userId);
+  // const initialState = await loadState(userId);
+  // console.log({ initialState });
+  const initialState = '';
 
   // Wait for framework data / setup data
   const experiments = await frameworkData.experimentsPromise;
@@ -61,7 +63,7 @@ export const createController = async function({
     },
     // Hook for state changes
     stateChange: () => {
-      saveState(this.state, userId);
+      // saveState(this.state, userId);
     },
     // Expose Corvid API
     exports: {

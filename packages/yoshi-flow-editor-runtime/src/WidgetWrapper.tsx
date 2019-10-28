@@ -43,16 +43,16 @@ const ComponentWrapper = (UserComponent: typeof React.Component) => (
       />
       <style dangerouslySetInnerHTML={{ __html: css }} />
       <ErrorBoundary handleException={error => console.log(error)}>
-        <PublicDataProvider data={props.__publicData__} Wix={window.Wix}>
-          <Suspense fallback={<div>Loading...</div>}>
+        <Suspense fallback={<div>Loading...</div>}>
+          <PublicDataProvider data={props.__publicData__} Wix={window.Wix}>
             <ControllerProvider data={props}>
               <UserComponent
                 {...createInstances(props.experiments)}
                 {...props}
               />
             </ControllerProvider>
-          </Suspense>
-        </PublicDataProvider>
+          </PublicDataProvider>
+        </Suspense>
       </ErrorBoundary>
     </div>
   );

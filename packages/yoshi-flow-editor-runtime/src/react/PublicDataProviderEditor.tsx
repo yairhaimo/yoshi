@@ -38,23 +38,29 @@ export class PublicDataProviderEditor extends React.Component<
   componentDidMount() {
     const { Wix } = this.props;
 
-    const publicDataPromise: Promise<Record<string, any>> = new Promise(
-      (resolve, reject) => {
-        try {
-          return Wix.Data.Public.getAll(resolve, reject);
-        } catch (e) {
-          console.error(e);
-          reject(e);
-        }
+    const publicDataPromise = new Promise((resolve, reject) => {
+      Wix.Data.Public.getAll(resolve, reject);
+      setTimeout(function() {
+        reject(new Error('Wix.Data.Public.getAll timeout reached'));
+      }, 500);
+    }).then(
+      (data: any) => {
+        console.log('success');
+        this.setState({
+          data: data[scope] || {},
+          ready: true,
+        });
+        return data[scope] || {};
+      },
+      e => {
+        console.error(e);
+        this.setState({
+          data: {},
+          ready: true,
+        });
+        return {};
       },
     );
-
-    publicDataPromise.then(data => {
-      this.setState({
-        data: data[scope] || {},
-        ready: true,
-      });
-    });
 
     // Specifically for editor, can be in a different provider that's
     // only used in `WidgetWrapper`
@@ -74,7 +80,8 @@ export class PublicDataProviderEditor extends React.Component<
 
   handleGetParam = (key: string) => {
     if (!this.state.ready || !this.state.data) {
-      throw new Error('Public data provider is not ready');
+      // throw new Error('Public data provider is not ready');
+      throw this.state.readyPromise;
     }
 
     return this.state.data[key];
@@ -84,7 +91,8 @@ export class PublicDataProviderEditor extends React.Component<
     const { Wix } = this.props;
 
     if (!this.state.ready || !this.state.data) {
-      throw new Error('Public data provider is not ready');
+      // throw new Error('Public data provider is not ready');
+      throw this.state.readyPromise;
     }
 
     if (this.state.data[key] === value) {
